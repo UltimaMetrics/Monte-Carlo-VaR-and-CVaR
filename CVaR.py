@@ -50,6 +50,38 @@ hVaR_90 = BITO_returns.quantile(0.10)
 hVaR_95 = BITO_returns.quantile(0.05)
 hVaR_99 = BITO_returns.quantile(0.01)
 
+
+#Scaling VaR
+VaR_90 = norm.ppf(1-0.90,mean,stdev)
+VaR_95 = norm.ppf(1-0.95,mean,stdev) #norm.ppf(0.05)
+VaR_99 = norm.ppf(1-0.99,mean,stdev)
+
+forecast_days = 5
+f_VaR_90 = VaR_90*np.sqrt(forecast_days)
+f_VaR_95 = VaR_95*np.sqrt(forecast_days)
+f_VaR_99 = VaR_99*np.sqrt(forecast_days)
+
+ftable = [['90%', f_VaR_90],['95%', f_VaR_95],['99%', f_VaR_99] ]
+fheader = ['Confidence Level', '5-Day Forecast Value At Risk']
+print(tabulate(ftable,headers=fheader))
+
+num_of_shares = 1000
+price = BITO['Close'].iloc[-1]
+position = num_of_shares * price 
+
+BITO_var_5days = position * f_VaR_99
+
+print(f'BITO Holding Value: {position}')
+print(f'BITO VaR at 99% confidence level is: {BITO_var_5days}')
+
+# Scaled VaR over different time horizon
+plt.figure(figsize=(8,6))
+plt.plot(range(100),[-100*VaR_95*np.sqrt(x) for x in range(100)])
+plt.xlabel('Horizon')
+plt.ylabel('Var 95 (%)')
+plt.title('VaR_95 Scaled by Time');
+
+
 # Calculate CVar
 CVaR_90 = (BITO_returns)[(BITO_returns)<=hVaR_90].mean()
 CVaR_95 =(BITO_returns)[(BITO_returns)<=hVaR_95].mean()
